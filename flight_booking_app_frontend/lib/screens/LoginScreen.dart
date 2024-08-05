@@ -1,7 +1,51 @@
-import 'package:flight_booking_app_frontend/screens/SignUpScreen.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'SignUpScreen.dart';
 
-class LoginScreen extends StatelessWidget {
+Future<void> login(String email, String password) async {
+  final url = 'http://192.168.89.129:3000/login'; // Change to your backend URL
+  final response = await http.post(
+    Uri.parse(url),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({'email': email, 'password': password}),
+  );
+
+  if (response.statusCode == 200) {
+    // User logged in successfully
+  } else {
+    // Handle error
+    throw Exception('Failed to log in');
+  }
+}
+
+class LoginScreen extends StatefulWidget {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  Future<void> _handleLogin() async {
+    final email = _emailController.text;
+    final password = _passwordController.text;
+
+    try {
+      await login(email, password);
+      // Show success message or navigate to another screen
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login successful')),
+      );
+    } catch (e) {
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to log in')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,11 +58,13 @@ class LoginScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             TextField(
+              controller: _emailController,
               decoration: InputDecoration(
                 labelText: 'Email',
               ),
             ),
             TextField(
+              controller: _passwordController,
               decoration: InputDecoration(
                 labelText: 'Password',
               ),
@@ -26,9 +72,7 @@ class LoginScreen extends StatelessWidget {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                // Perform login action
-              },
+              onPressed: _handleLogin,
               child: Text('Login'),
             ),
             SizedBox(height: 20),
