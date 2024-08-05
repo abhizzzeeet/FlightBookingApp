@@ -1,0 +1,38 @@
+{
+  "project_info": {
+    "project_number": "369826159857",
+    "project_id": "flightbook-b446d",
+    "storage_bucket": "flightbook-b446d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:369826159857:android:af89b8284c1b1ac0835d50",
+        "android_client_info": {
+          "package_name": "com.example.flight_booking_app_frontend"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "369826159857-p10r42th0eo33tufdjvh4qctatfe6f4m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.flight_booking_app_frontend",
+            "certificate_hash": "55465c1afda55407ddc2206f485cdf8175bf98c4"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDA3t8GC8fvgSrWpd-T3TPcT_7Zy4D1Uog"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

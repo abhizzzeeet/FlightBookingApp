@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="default_web_client_id" translatable="false">369826159857-p10r42th0eo33tufdjvh4qctatfe6f4m.apps.googleusercontent.com</string>
+    <string name="firebase_database_url" translatable="false">https://flightbook-b446d.firebaseio.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">369826159857</string>
+    <string name="google_api_key" translatable="false">AIzaSyDA3t8GC8fvgSrWpd-T3TPcT_7Zy4D1Uog</string>
+    <string name="google_app_id" translatable="false">1:369826159857:android:af89b8284c1b1ac0835d50</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyDA3t8GC8fvgSrWpd-T3TPcT_7Zy4D1Uog</string>
+    <string name="project_id" translatable="false">flightbook-b446d</string>
+</resources>
