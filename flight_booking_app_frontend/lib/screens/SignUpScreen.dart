@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> d9b2ed5e6da6f5a9b6bdbdeaf31b47ac7fc9179d
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -52,7 +55,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Sign up successful')),
       );
+<<<<<<< HEAD
       Navigator.pop(context);
+=======
+>>>>>>> d9b2ed5e6da6f5a9b6bdbdeaf31b47ac7fc9179d
     } catch (e, stackTrace) {
       // Show error message
       logger.e('Error : $e',error: e, stackTrace: stackTrace);

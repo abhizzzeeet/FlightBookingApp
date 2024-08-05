@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 
 import 'package:flight_booking_app_frontend/screens/HomeScreen.dart';
+=======
+>>>>>>> d9b2ed5e6da6f5a9b6bdbdeaf31b47ac7fc9179d
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -40,10 +43,13 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Login successful')),
       );
+<<<<<<< HEAD
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),
       );
+=======
+>>>>>>> d9b2ed5e6da6f5a9b6bdbdeaf31b47ac7fc9179d
     } catch (e) {
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
