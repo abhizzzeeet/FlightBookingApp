@@ -1,15 +1,14 @@
-<<<<<<< HEAD
+
 
 import 'package:flight_booking_app_frontend/screens/HomeScreen.dart';
-=======
->>>>>>> d9b2ed5e6da6f5a9b6bdbdeaf31b47ac7fc9179d
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'SignUpScreen.dart';
 
 Future<void> login(String email, String password) async {
-  final url = 'http://192.168.89.129:3000/login'; // Change to your backend URL
+  final url = 'http://192.168.89.129:3000/api/auth/login'; // Change to your backend URL
   final response = await http.post(
     Uri.parse(url),
     headers: {'Content-Type': 'application/json'},
@@ -40,16 +39,14 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await login(email, password);
       // Show success message or navigate to another screen
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login successful')),
-      );
-<<<<<<< HEAD
-      Navigator.pushReplacement(
+      Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),
       );
-=======
->>>>>>> d9b2ed5e6da6f5a9b6bdbdeaf31b47ac7fc9179d
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login successful')),
+      );
+
     } catch (e) {
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
