@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'SignUpScreen.dart';
 
 Future<void> login(String email, String password) async {
+  print("Login Handled");
   final url = 'http://192.168.89.129:3000/api/auth/login'; // Change to your backend URL
   final response = await http.post(
     Uri.parse(url),
