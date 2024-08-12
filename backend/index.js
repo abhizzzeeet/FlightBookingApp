@@ -4,7 +4,7 @@ const admin = require('firebase-admin');
 const cors = require('cors');
 const authRoutes = require('./routes/authRoutes')
 const flightSuggestion = require('./routes/flightSuggest');
-
+const flightSearch = require('./routes/flightSearch')
 const serviceAccount = require('./serviceAccountKey.json');
 
 admin.initializeApp({
@@ -17,6 +17,7 @@ app.use(cors());
 
 app.use('/api/auth',authRoutes)
 app.use('/api/flights', flightSuggestion);
+app.use('/api/flights', flightSearch)
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT,'0.0.0.0', () => {

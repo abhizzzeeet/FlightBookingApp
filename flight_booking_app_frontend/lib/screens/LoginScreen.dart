@@ -57,6 +57,14 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _emailController.text='abhijeetbasfore@gmail.com';
+    _passwordController.text='Abhijeet@123';
+
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

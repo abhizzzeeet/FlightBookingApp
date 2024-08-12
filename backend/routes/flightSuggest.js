@@ -20,7 +20,7 @@ router.get('/search', async (req, res) => {
         'page[limit]': 10
       }
     });
-
+    
     return res.json(response.data.data);
   } catch (error) {
     console.error('Error fetching locations:', error);
