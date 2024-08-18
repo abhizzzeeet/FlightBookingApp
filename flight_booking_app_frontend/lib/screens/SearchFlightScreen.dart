@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 
+import 'ReviewFlightScreen.dart';
+
 class SearchFlightScreen extends StatefulWidget {
   final String origin;
   final String destination;
@@ -17,7 +19,7 @@ class SearchFlightScreen extends StatefulWidget {
     required this.returnDate,
     required this.adults,
     required this.children,
-    required this.travelClass
+    required this.travelClass,
   });
 
   @override
@@ -34,7 +36,7 @@ class _SearchFlightScreenState extends State<SearchFlightScreen> {
   }
 
   Future<void> _fetchFlights() async {
-    final url = 'http://192.168.89.129:3000/api/flights/searchAvailableFlights';
+    final url = 'http://192.168.229.79:3000/api/flights/searchAvailableFlights';
     final params = {
       'origin': widget.origin,
       'destination': widget.destination,
@@ -42,7 +44,8 @@ class _SearchFlightScreenState extends State<SearchFlightScreen> {
       'returnDate': widget.returnDate,
       'adults': widget.adults.toString(),
       'children': widget.children.toString(),
-      'travelClass': widget.travelClass
+      'travelClass': widget.travelClass,
+      'currency': 'INR'  // Assuming you want INR; adjust if needed
     };
 
     try {
@@ -74,35 +77,56 @@ class _SearchFlightScreenState extends State<SearchFlightScreen> {
           itemBuilder: (context, index) {
             final flight = flights[index];
             final itineraries = flight['itineraries'] as List<dynamic>;
-            final outbound = itineraries[0]['segments'][0];
-            // final returnSegment = itineraries[1]['segments'][0];
+            final segments = itineraries[0]['segments'] as List<dynamic>;
+            final outbound = segments[0];
+            final arrivalSegment = segments.last;
 
-            return Card(
-              margin: EdgeInsets.symmetric(vertical: 8.0),
-              elevation: 4,
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Flight ${flight['id']}',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            // Calculate number of stops
+            final numberOfStops = segments.length - 1;
+
+            // Extract flight company and flight number
+            final carrierCode = outbound['carrierCode'];
+            final flightNumber = outbound['number'];
+
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ReviewFlightScreen(
+                      flightData: flight,
                     ),
-                    SizedBox(height: 8),
-                    Text('Departure: ${outbound['departure']['at']}'),
-                    Text('Arrival: ${outbound['arrival']['at']}'),
-                    Text('Duration: ${outbound['duration']}'),
-                    // SizedBox(height: 8),
-                    // Text('Return Departure: ${returnSegment['departure']['at']}'),
-                    // Text('Return Arrival: ${returnSegment['arrival']['at']}'),
-                    // Text('Return Duration: ${returnSegment['duration']}'),
-                    SizedBox(height: 8),
-                    Text('Price: ${flight['price']['grandTotal']} ${flight['price']['currency']}'),
-                    SizedBox(height: 8),
-                    Text('Origin IATA: ${outbound['departure']['iataCode']}'),
-                    Text('Destination IATA: ${outbound['arrival']['iataCode']}'),
-                  ],
+                  ),
+                );
+              },
+              child: Card(
+                margin: EdgeInsets.symmetric(vertical: 8.0),
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Flight ${flight['id']}',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 8),
+                      Text('Carrier: $carrierCode'),
+                      Text('Flight Number: $flightNumber'),
+                      SizedBox(height: 8),
+                      Text('Departure: ${outbound['departure']['at']}'),
+                      Text('Arrival: ${arrivalSegment['arrival']['at']}'),
+                      Text('Duration: ${itineraries[0]['duration']}'),
+                      SizedBox(height: 8),
+                      Text('Number of Stops: $numberOfStops'),
+                      SizedBox(height: 8),
+                      Text('Price: ${flight['price']['grandTotal']} ${flight['price']['currency']}'),
+                      SizedBox(height: 8),
+                      Text('Origin IATA: ${outbound['departure']['iataCode']}'),
+                      Text('Destination IATA: ${arrivalSegment['arrival']['iataCode']}'),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -111,4 +135,5 @@ class _SearchFlightScreenState extends State<SearchFlightScreen> {
       ),
     );
   }
+
 }

@@ -10,14 +10,15 @@ router.get('/searchAvailableFlights', async (req, res) => {
     
     try{
         const accessToken = await getAccessToken();
-
+        console.log("AccessToken in flightSearch:",accessToken);
         let params = {
             originLocationCode: origin,
             destinationLocationCode: destination,
             departureDate: departureDate,
             adults: adults,
             children: children,
-            travelClass: travelClass
+            travelClass: travelClass,
+            currencyCode: 'INR'
         };
 
         // Conditionally add returnDate if it's provided

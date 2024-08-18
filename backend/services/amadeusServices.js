@@ -26,7 +26,7 @@ const getAccessToken = async () => {
 
     // Store the new token and calculate its expiry time
     accessToken = response.data.access_token;
-    console.log('Acess Token:',accessToken);
+    console.log('Access Token:',accessToken);
     const expiresIn = response.data.expires_in; // Time in seconds
     tokenExpiry = new Date(new Date().getTime() + expiresIn * 1000);
 
