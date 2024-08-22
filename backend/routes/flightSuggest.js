@@ -1,12 +1,12 @@
 const express = require('express');
 const axios = require('axios');
 // const { accessToken} = require('../config/amadeusConfig');
-const { getAccessToken } = require('../services/amadeusServices')
+const { getAccessToken } = require('../services/amadeusServices');
 const router = express.Router();
 
 router.get('/search', async (req, res) => {
-  const { keyword} = req.query;
-
+  const {keyword} = req.query;
+  console.log("Keyword passed: ", keyword);
   try {
     const accessToken = await getAccessToken();
     console.log("AccessToken in flightSuggest:",accessToken);

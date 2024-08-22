@@ -4,9 +4,15 @@ require('dotenv').config();
 
 let accessToken = null;
 let tokenExpiry = null;
-
+console.log("amadeusServices.js loaded");
 const getAccessToken = async () => {
+
+  console.log('Current Token:', accessToken);
+  console.log('Token Expiry:', tokenExpiry);
+  console.log('Token Expiry condition: ', new Date() < tokenExpiry);
+
   if (accessToken && tokenExpiry && new Date() < tokenExpiry) {
+    console.log("Access Token previously present: ",accessToken);
     return accessToken;
   }
 
@@ -26,9 +32,13 @@ const getAccessToken = async () => {
 
     // Store the new token and calculate its expiry time
     accessToken = response.data.access_token;
-    console.log('Access Token:',accessToken);
+    console.log('New Access Token:',accessToken);
     const expiresIn = response.data.expires_in; // Time in seconds
     tokenExpiry = new Date(new Date().getTime() + expiresIn * 1000);
+
+    console.log('Current Token:', accessToken);
+    console.log('Token Expiry:', tokenExpiry);
+    console.log('Token Expiry condition: ', new Date() < tokenExpiry);
 
     return accessToken;
   } catch (error) {

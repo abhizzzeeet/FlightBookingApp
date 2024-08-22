@@ -68,7 +68,7 @@ class _SelectTravellersScreenState extends State<SelectTravellersScreen> {
 
   Future<String> _getCountryCode(String iataCode) async {
     final response = await http.get(
-      Uri.parse('http://192.168.229.79:3000/api/flights/checkCountry/$iataCode'),
+      Uri.parse('http://192.168.219.182:3000/api/flights/checkCountry/$iataCode'),
     );
     print("Country Code response : ${response.body}");
     if (response.statusCode == 200) {

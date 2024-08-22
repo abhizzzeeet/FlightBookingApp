@@ -36,7 +36,7 @@ class _SearchFlightScreenState extends State<SearchFlightScreen> {
   }
 
   Future<void> _fetchFlights() async {
-    final url = 'http://192.168.229.79:3000/api/flights/searchAvailableFlights';
+    final url = 'http://192.168.219.182:3000/api/flights/searchAvailableFlights';
     final params = {
       'origin': widget.origin,
       'destination': widget.destination,
