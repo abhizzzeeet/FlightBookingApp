@@ -1,13 +1,17 @@
 buildscript {
+    ext.kotlin_version = '1.9.0'
     repositories {
-        google()       // Required for Google services
-        mavenCentral() // Required for Maven dependencies
+        google()
+        mavenCentral()
     }
+
     dependencies {
-        // Add this line
+        classpath 'com.android.tools.build:gradle:7.3.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.google.gms:google-services:4.4.2'
     }
 }
+
 
 allprojects {
     repositories {

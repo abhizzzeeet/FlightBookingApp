@@ -8,6 +8,7 @@ const flightSearch = require('./routes/flightSearch');
 const flightCheckPrice = require('./routes/flightCheckPrice');
 const flightCheckCountry = require('./routes/flightCheckCountry');
 const flightSeatMap = require('./routes/flightSeatMap');
+const payment = require('./routes/payment');
 const serviceAccount = require('./serviceAccountKey.json');
 
 admin.initializeApp({
@@ -24,6 +25,7 @@ app.use('/api/flights', flightSearch);
 app.use('/api/flights', flightCheckPrice);
 app.use('/api/flights/checkCountry',flightCheckCountry);
 app.use('/api/flights/flightSeatMap', flightSeatMap);
+app.use('/api/payment', payment);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT,'0.0.0.0', () => {

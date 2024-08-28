@@ -1,6 +1,7 @@
 
 
 import 'package:flight_booking_app_frontend/screens/HomeScreen.dart';
+import 'package:flight_booking_app_frontend/screens/PaymentScreen.dart';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -43,7 +44,8 @@ class _LoginScreenState extends State<LoginScreen> {
       // Show success message or navigate to another screen
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        // MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => PaymentScreen()),
       );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Login successful')),

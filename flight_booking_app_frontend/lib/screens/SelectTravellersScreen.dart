@@ -1,15 +1,13 @@
-import 'dart:io';
+import 'dart:convert';
 
 import 'package:flight_booking_app_frontend/screens/ChooseSeatScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 import '../models/Traveller.dart';
 
 class SelectTravellersScreen extends StatefulWidget {
   final Map<String, dynamic>? pricingData;
-
   SelectTravellersScreen({Key? key, this.pricingData}) : super(key: key);
 
   @override
@@ -29,10 +27,16 @@ class _SelectTravellersScreenState extends State<SelectTravellersScreen> {
     travellerType: 'ADULT',
   )];
   bool isDomestic = true;
+  late int numberOfTravellers = 0;
 
   @override
   void initState() {
     super.initState();
+    // var travelerPricings = widget.pricingData?['data']?['flightOffers']?[0]['travelerPricings'] as List<dynamic>?;
+    final travelers = widget.pricingData?['travelerPricings'] as List<dynamic>?;
+
+    numberOfTravellers = travelers?.length ?? 1;
+    print("SelectTravellersScreen Number of travellers: $numberOfTravellers");
     _checkTravelType();
   }
 
@@ -102,6 +106,17 @@ class _SelectTravellersScreenState extends State<SelectTravellersScreen> {
   }
 
   Future<void> _submitTravellers() async {
+    if (travellers.length != numberOfTravellers) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Please enter information for all travelers."),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     final travellersJson = travellers.map((traveller) => traveller.toJson(isDomestic: isDomestic)).toList();
 
     // Combine pricingData and traveller data
@@ -115,10 +130,6 @@ class _SelectTravellersScreenState extends State<SelectTravellersScreen> {
       }
     };
 
-    // final file = File(r'F:\projects\apps\flutter apps\flight_booking_app\outputs\combinedDataSelectTravellersScreen.txt'); // Update the path accordingly
-    // await file.writeAsString(json.encode(combinedData));
-    // print('JSON written to file.');
-
     print("Combined Data : ${json.encode(combinedData)}");
 
     Navigator.push(
@@ -130,7 +141,6 @@ class _SelectTravellersScreenState extends State<SelectTravellersScreen> {
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
