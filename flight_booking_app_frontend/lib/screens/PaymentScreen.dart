@@ -10,9 +10,10 @@ void main() async {
 
 Future<void> _setup() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Stripe.publishableKey = 'pk_test_51PsKYGDfeL7GR0IaV7aOHhCIVCDHZU4i9fxSVb7zHAuzu4T2srHPxCniMTPqIIMmpkdPtRHCnqHV4HMD8pYMuiDP00EpJCGmSi';
-
+  Stripe.publishableKey =
+      'pk_test_51PsKYGDfeL7GR0IaV7aOHhCIVCDHZU4i9fxSVb7zHAuzu4T2srHPxCniMTPqIIMmpkdPtRHCnqHV4HMD8pYMuiDP00EpJCGmSi';
 }
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -28,52 +29,46 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
-  bool isLoading=false;
+  bool isLoading = false;
 
   Future<String> _createPaymentIntent(int amount, String currency) async {
-    final String paymentUrl = 'http://192.168.219.182:3000/api/payment/createPaymentIntent';
-
-
     try {
-      setState(() {
-        isLoading = true;
-      });
+      // isLoading = true;
+      print("before making request");
+      final url =
+          'https://us-central1-flightbook-b446d.cloudfunctions.net/createPaymentIntentHTTP';
       final response = await http.post(
-        Uri.parse(paymentUrl),
+        Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'amount': amount,
+        body: jsonEncode({
+          'amount': amount.toString(),
           'currency': currency,
         }),
       );
+      print("After making request");
+      final jsonResponse = jsonDecode(response.body);
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final clientSecret = data['client_secret'];
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$clientSecret')),
-        );
-        print("Response: $data");
-
-        return clientSecret;
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to create Payment Intent')),
-        );
-        return "";
-      }
-    } catch (e) {
+      // final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('createPaymentIntent');
+      // final results = await callable.call(<String, dynamic>{
+      //   'amount': amount,
+      //   'currency': currency,
+      // });
+      final clientSecret = jsonResponse['clientSecret'];
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text('clientSecret: $clientSecret')),
       );
-
+      return clientSecret;
+    } catch (e) {
+      print("ERROR create payment intent: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('ERROR create payment intent: $e')),
+      );
       return "";
-    }finally {
+    } finally {
       setState(() {
         isLoading = false;
       });
     }
-
   }
 
   Future<void> _makePayment() async {
@@ -81,12 +76,23 @@ class _PaymentScreenState extends State<PaymentScreen> {
       SnackBar(content: Text('pay pressed')),
     );
     try {
-      final clientSecret = await _createPaymentIntent(10000,'inr');
+      final clientSecret = await _createPaymentIntent(10000, 'inr');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('clientSecret in makePayment: $clientSecret')),
+      );
       if (clientSecret != "") {
-        await Stripe.instance.initPaymentSheet(paymentSheetParameters: SetupPaymentSheetParameters(
-          paymentIntentClientSecret: clientSecret,
-          merchantDisplayName: "Stripe Test",
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Before initPaymentSheet')),
+        );
+        await Stripe.instance.initPaymentSheet(
+          paymentSheetParameters: SetupPaymentSheetParameters(
+            paymentIntentClientSecret: clientSecret,
+            merchantDisplayName: "Stripe Test",
+          ),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('After initPaymentSheet')),
+        );
         await _displayPaymentSheet(clientSecret);
       }
     } catch (e) {
@@ -105,13 +111,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
       await Stripe.instance.confirmPaymentSheetPayment();
 
       // Retrieve and check the payment intent status
-      final paymentIntent = await Stripe.instance.retrievePaymentIntent(clientSecret);
+      final paymentIntent =
+          await Stripe.instance.retrievePaymentIntent(clientSecret);
       if (paymentIntent.status == PaymentIntentsStatus.RequiresAction) {
         // Handle next action, such as 3D Secure authentication
         await Stripe.instance.handleNextAction(clientSecret);
 
         // Check the payment status after handling the next action
-        final updatedIntent = await Stripe.instance.retrievePaymentIntent(clientSecret);
+        final updatedIntent =
+            await Stripe.instance.retrievePaymentIntent(clientSecret);
         if (updatedIntent.status == PaymentIntentsStatus.Succeeded) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Payment successful!')),
@@ -135,7 +143,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error presenting payment sheet: $e')),
       );
-    }finally {
+    } finally {
       setState(() {
         isLoading = false;
       });
@@ -151,12 +159,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
       body: Center(
         child: isLoading
             ? CircularProgressIndicator()
-            :ElevatedButton(
-          onPressed: () async {
-            await _makePayment();  // Example amount in cents
-          },
-          child: Text('Pay Now'),
-        ),
+            : ElevatedButton(
+                onPressed: () async {
+                  await _makePayment(); // Example amount in cents
+                },
+                child: Text('Pay Now'),
+              ),
       ),
     );
   }
