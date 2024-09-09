@@ -1,7 +1,11 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'MyBookingsScreen.dart';
 
 void main() async {
   await _setup();
@@ -18,12 +22,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: PaymentScreen(),
+      home: PaymentScreen(amount: 10000,combinedData: {}),
     );
   }
 }
 
 class PaymentScreen extends StatefulWidget {
+  final double amount;
+  final Map<String, Map<String, Object?>> combinedData;
+
+  PaymentScreen({required this.amount, required this.combinedData});
+
+
   @override
   _PaymentScreenState createState() => _PaymentScreenState();
 }
@@ -31,9 +41,11 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   bool isLoading = false;
 
-  Future<String> _createPaymentIntent(int amount, String currency) async {
+  Future<String> _createPaymentIntent(double amount, String currency) async {
     try {
       // isLoading = true;
+      amount=amount*100;
+      int amt = amount.toInt();
       print("before making request");
       final url =
           'https://us-central1-flightbook-b446d.cloudfunctions.net/createPaymentIntentHTTP';
@@ -41,7 +53,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'amount': amount.toString(),
+          'amount': amt.toString(),
           'currency': currency,
         }),
       );
@@ -76,7 +88,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       SnackBar(content: Text('pay pressed')),
     );
     try {
-      final clientSecret = await _createPaymentIntent(10000, 'inr');
+      final clientSecret = await _createPaymentIntent(widget.amount, 'inr');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('clientSecret in makePayment: $clientSecret')),
       );
@@ -108,40 +120,22 @@ class _PaymentScreenState extends State<PaymentScreen> {
         SnackBar(content: Text('presenting payment sheet')),
       );
       await Stripe.instance.presentPaymentSheet();
-      await Stripe.instance.confirmPaymentSheetPayment();
 
-      // Retrieve and check the payment intent status
-      final paymentIntent =
-          await Stripe.instance.retrievePaymentIntent(clientSecret);
-      if (paymentIntent.status == PaymentIntentsStatus.RequiresAction) {
-        // Handle next action, such as 3D Secure authentication
-        await Stripe.instance.handleNextAction(clientSecret);
+      // If successful, navigate to MyBookingsScreen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MyBookingsScreen(combinedData: widget.combinedData),
+        ),
+      );
 
-        // Check the payment status after handling the next action
-        final updatedIntent =
-            await Stripe.instance.retrievePaymentIntent(clientSecret);
-        if (updatedIntent.status == PaymentIntentsStatus.Succeeded) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Payment successful!')),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Payment failed: ${updatedIntent.status}')),
-          );
-        }
-      } else if (paymentIntent.status == PaymentIntentsStatus.Succeeded) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Payment successful!')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Payment failed: ${paymentIntent.status}')),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Payment Successful!')),
+      );
     } catch (e) {
       print("Display Error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error presenting payment sheet: $e')),
+        SnackBar(content: Text('Payment failed: $e')),
       );
     } finally {
       setState(() {

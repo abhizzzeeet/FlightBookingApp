@@ -22,6 +22,7 @@
             
             res.status(200).send(paymentIntent);
         } catch (error) {
+            
             console.log("Payment ERROR: ", error);
             res.status(500).send({ error: error.message });
         }

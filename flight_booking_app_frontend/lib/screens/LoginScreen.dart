@@ -8,7 +8,7 @@ import 'SignUpScreen.dart';
 
 Future<void> login(String email, String password) async {
   print("Login Handled");
-  final url = 'http://192.168.219.182:3000/api/auth/login'; // Change to your backend URL
+  final url = 'http://192.168.232.90:3000/api/auth/login'; // Change to your backend URL
   final response = await http.post(
     Uri.parse(url),
     headers: {'Content-Type': 'application/json'},
@@ -42,8 +42,8 @@ class _LoginScreenState extends State<LoginScreen> {
       // Show success message or navigate to another screen
       Navigator.push(
         context,
-        // MaterialPageRoute(builder: (context) => HomeScreen()),
-        MaterialPageRoute(builder: (context) => PaymentScreen()),
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+        // MaterialPageRoute(builder: (context) => PaymentScreen()),
       );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Login successful')),

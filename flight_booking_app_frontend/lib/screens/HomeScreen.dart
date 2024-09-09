@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (input.isEmpty) return;
 
     // Replace with your backend endpoint
-    String url = 'http://192.168.219.182:3000/api/flights/search?keyword=$input';
+    String url = 'http://192.168.232.90:3000/api/flights/search?keyword=$input';
 
     try {
       final response = await Dio().get(url);

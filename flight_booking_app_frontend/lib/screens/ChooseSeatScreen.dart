@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
+import 'PaymentScreen.dart';
+
 class ChooseSeatScreen extends StatefulWidget {
   final Map<String, Map<String, Object?>> combinedData;
 
@@ -36,7 +38,7 @@ class _ChooseSeatScreenState extends State<ChooseSeatScreen> {
 
   Future<void> _fetchSeatMap() async {
     Dio dio = Dio();
-    final url = 'http://192.168.219.182:3000/api/flights/flightSeatMap';
+    final url = 'http://192.168.232.90:3000/api/flights/flightSeatMap';
 
     var flightOffers = widget.combinedData['data']?['flightOffers'];
 
@@ -175,9 +177,20 @@ class _ChooseSeatScreenState extends State<ChooseSeatScreen> {
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Text(
-              'Total Amount: Rs${totalAmount.toStringAsFixed(2)}',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            child: ElevatedButton(
+              onPressed: () {
+                // Navigate to PaymentScreen and pass totalAmount
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PaymentScreen(amount: totalAmount,combinedData: widget.combinedData),
+                  ),
+                );
+              },
+              child: Text(
+                'Pay: Rs${totalAmount.toStringAsFixed(2)}',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         ],
@@ -240,6 +253,7 @@ class _ChooseSeatScreenState extends State<ChooseSeatScreen> {
               bool isSelected = selectedSeats.containsKey(seat['number']);
               return GestureDetector(
                 onTap: () {
+                  print("Seat Clicked");
                   double seatPrice = double.parse(seat['travelerPricing'][0]['price']['total'] ?? '0.0');
                   _onSeatSelected(pageIndex, seat['number'], seatPrice);
                 },

@@ -8,7 +8,7 @@ final logger = Logger();
 
 
 Future<void> signUp(String email, String password) async {
-  final url = 'http://192.168.219.182:3000/api/auth/signup'; // Change to your backend URL
+  final url = 'http://192.168.232.90:3000/api/auth/signup'; // Change to your backend URL
   final response = await http.post(
     Uri.parse(url),
     headers: {'Content-Type': 'application/json'},

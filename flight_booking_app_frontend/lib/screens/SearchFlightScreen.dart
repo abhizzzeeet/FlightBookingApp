@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:intl/intl.dart';
 
 import 'ReviewFlightScreen.dart';
 
@@ -36,7 +37,7 @@ class _SearchFlightScreenState extends State<SearchFlightScreen> {
   }
 
   Future<void> _fetchFlights() async {
-    final url = 'http://192.168.219.182:3000/api/flights/searchAvailableFlights';
+    final url = 'http://192.168.232.90:3000/api/flights/searchAvailableFlights';
     final params = {
       'origin': widget.origin,
       'destination': widget.destination,
@@ -60,6 +61,20 @@ class _SearchFlightScreenState extends State<SearchFlightScreen> {
         SnackBar(content: Text('Failed to fetch flights')),
       );
     }
+  }
+  // Function to format the time portion of the datetime string
+  String formatTime(String dateTimeString) {
+    try {
+      final DateTime dateTime = DateTime.parse(dateTimeString);
+      return DateFormat.Hm().format(dateTime);
+    } catch (e) {
+      print('Error formatting time: $e');
+      return '';
+    }
+  }
+  String formatDuration(String duration) {
+    final match = RegExp(r'PT(?:(\d+)H)?(?:(\d+)M)?').firstMatch(duration);
+    return '${match?.group(1) ?? '0'}hr ${match?.group(2) ?? '0'}min';
   }
 
   @override
@@ -88,6 +103,21 @@ class _SearchFlightScreenState extends State<SearchFlightScreen> {
             final carrierCode = outbound['carrierCode'];
             final flightNumber = outbound['number'];
 
+            // Concatenate carrier code and flight number
+            final carrierAndNumber = '$carrierCode $flightNumber';
+
+
+            // Format departure and arrival times
+            final departureTime = formatTime(outbound['departure']['at']);
+            final arrivalTime = formatTime(arrivalSegment['arrival']['at']);
+
+            // Format duration
+            final duration = itineraries[0]['duration'];
+            final durationInHrMin = formatDuration(duration);
+
+            // Determine stop text
+            final stopsText = numberOfStops == 0 ? 'Non-stop' : '$numberOfStops stop';
+
             return GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -107,24 +137,63 @@ class _SearchFlightScreenState extends State<SearchFlightScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Flight ${flight['id']}',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      SizedBox(height: 8),
+                      Text('$carrierAndNumber'),
+                      SizedBox(height: 8),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Row with the horizontal line between departure and arrival times
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(departureTime),
+                                    Text('${outbound['departure']['iataCode']}'),
+                                  ],
+                                ),
+                              ),
+                              Expanded(child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text('$durationInHrMin'),
+                                  SizedBox(height: 4),
+                                  Divider(),
+                                  SizedBox(height: 4),
+                                  // Stops text below the line
+                                  Text(stopsText),
+                                ],
+                              )),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(arrivalTime),
+                                    Text('${arrivalSegment['arrival']['iataCode']}'),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+
+                        ],
                       ),
                       SizedBox(height: 8),
-                      Text('Carrier: $carrierCode'),
-                      Text('Flight Number: $flightNumber'),
-                      SizedBox(height: 8),
-                      Text('Departure: ${outbound['departure']['at']}'),
-                      Text('Arrival: ${arrivalSegment['arrival']['at']}'),
-                      Text('Duration: ${itineraries[0]['duration']}'),
-                      SizedBox(height: 8),
-                      Text('Number of Stops: $numberOfStops'),
-                      SizedBox(height: 8),
-                      Text('Price: ${flight['price']['grandTotal']} ${flight['price']['currency']}'),
-                      SizedBox(height: 8),
-                      Text('Origin IATA: ${outbound['departure']['iataCode']}'),
-                      Text('Destination IATA: ${arrivalSegment['arrival']['iataCode']}'),
+                      Row(
+                        children: [
+                          Spacer(),  // Pushes the price to the right
+                          Text(
+                            '${flight['price']['grandTotal']} ${flight['price']['currency']}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -135,5 +204,7 @@ class _SearchFlightScreenState extends State<SearchFlightScreen> {
       ),
     );
   }
+
+
 
 }
