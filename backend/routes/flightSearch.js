@@ -6,8 +6,6 @@ const router = express.Router();
 
 router.get('/searchAvailableFlights', async (req, res) => {
     const { origin, destination, departureDate, returnDate, adults, children, travelClass } = req.query;
-
-    
     try{
         const accessToken = await getAccessToken();
         console.log("AccessToken in flightSearch:",accessToken);

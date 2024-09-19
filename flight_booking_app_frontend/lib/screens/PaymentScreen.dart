@@ -15,14 +15,14 @@ void main() async {
 Future<void> _setup() async {
   WidgetsFlutterBinding.ensureInitialized();
   Stripe.publishableKey =
-      'pk_test_51PsKYGDfeL7GR0IaV7aOHhCIVCDHZU4i9fxSVb7zHAuzu4T2srHPxCniMTPqIIMmpkdPtRHCnqHV4HMD8pYMuiDP00EpJCGmSi';
+  'pk_test_51PsKYGDfeL7GR0IaV7aOHhCIVCDHZU4i9fxSVb7zHAuzu4T2srHPxCniMTPqIIMmpkdPtRHCnqHV4HMD8pYMuiDP00EpJCGmSi';
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: PaymentScreen(amount: 10000,combinedData: {}),
+      home: PaymentScreen(amount: 10000, combinedData: {}),
     );
   }
 }
@@ -33,18 +33,24 @@ class PaymentScreen extends StatefulWidget {
 
   PaymentScreen({required this.amount, required this.combinedData});
 
-
   @override
   _PaymentScreenState createState() => _PaymentScreenState();
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
-  bool isLoading = false;
+  bool isLoading = true;  // Show loading indicator initially
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _makePayment(); // Call makePayment after widget is fully built
+    });
+  }
 
   Future<String> _createPaymentIntent(double amount, String currency) async {
     try {
-      // isLoading = true;
-      amount=amount*100;
+      amount = amount * 100;
       int amt = amount.toInt();
       print("before making request");
       final url =
@@ -59,87 +65,46 @@ class _PaymentScreenState extends State<PaymentScreen> {
       );
       print("After making request");
       final jsonResponse = jsonDecode(response.body);
-
-      // final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('createPaymentIntent');
-      // final results = await callable.call(<String, dynamic>{
-      //   'amount': amount,
-      //   'currency': currency,
-      // });
       final clientSecret = jsonResponse['clientSecret'];
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('clientSecret: $clientSecret')),
-      );
       return clientSecret;
     } catch (e) {
       print("ERROR create payment intent: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('ERROR create payment intent: $e')),
-      );
       return "";
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
     }
   }
 
   Future<void> _makePayment() async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('pay pressed')),
-    );
     try {
       final clientSecret = await _createPaymentIntent(widget.amount, 'inr');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('clientSecret in makePayment: $clientSecret')),
-      );
       if (clientSecret != "") {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Before initPaymentSheet')),
-        );
         await Stripe.instance.initPaymentSheet(
           paymentSheetParameters: SetupPaymentSheetParameters(
             paymentIntentClientSecret: clientSecret,
             merchantDisplayName: "Stripe Test",
           ),
         );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('After initPaymentSheet')),
-        );
         await _displayPaymentSheet(clientSecret);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Payment Error: $e')),
-      );
+      print("Payment Error: $e");
     }
   }
 
   Future<void> _displayPaymentSheet(String clientSecret) async {
     try {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('presenting payment sheet')),
-      );
       await Stripe.instance.presentPaymentSheet();
-
-      // If successful, navigate to MyBookingsScreen
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => MyBookingsScreen(combinedData: widget.combinedData),
+          builder: (context) =>
+              MyBookingsScreen(combinedData: widget.combinedData),
         ),
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Payment Successful!')),
       );
     } catch (e) {
       print("Display Error: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Payment failed: $e')),
-      );
     } finally {
       setState(() {
-        isLoading = false;
+        isLoading = false; // Hide loading indicator after processing
       });
     }
   }
@@ -150,16 +115,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
       appBar: AppBar(
         title: Text('Payment Screen'),
       ),
-      body: Center(
-        child: isLoading
-            ? CircularProgressIndicator()
-            : ElevatedButton(
-                onPressed: () async {
-                  await _makePayment(); // Example amount in cents
-                },
-                child: Text('Pay Now'),
-              ),
-      ),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator()) // Show loading indicator
+          : Center(child: Text('Processing Payment...')), // Show processing message
     );
   }
 }
