@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flight_booking_app_frontend/screens/SeatBookingSynchronize.dart';
 import 'package:flutter/material.dart';
 
 import 'PaymentScreen.dart';
@@ -54,6 +55,8 @@ class _ChooseSeatScreenState extends State<ChooseSeatScreen> {
 
         if (response.statusCode == 200) {
           final seatMapData = response.data['data'];
+          SeatBookingSyncronize sync = SeatBookingSyncronize(seatMapData, context);
+          await sync.synchronizeWithWebSocket();
           _createSeatMapPages(seatMapData);
         } else {
           setState(() {
