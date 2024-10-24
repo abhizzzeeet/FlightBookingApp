@@ -1,3 +1,5 @@
+import 'package:flight_booking_app_frontend/utils/constants.dart';
+
 import 'SearchFlightScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart'; // For making HTTP requests
@@ -49,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (input.isEmpty) return;
 
     // Replace with your backend endpoint
-    String url = 'http://192.168.232.90:3000/api/flights/search?keyword=$input';
+    String url = '${Constants.baseUrl}/api/flights/search?keyword=$input';
 
     try {
       final response = await Dio().get(url);

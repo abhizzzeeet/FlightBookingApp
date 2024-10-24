@@ -5,6 +5,7 @@ const cors = require('cors');
 const http = require('http');
 const { Server } = require("socket.io");
 
+
 const authRoutes = require('./routes/authRoutes');
 const flightSuggestion = require('./routes/flightSuggest');
 const flightSearch = require('./routes/flightSearch');
@@ -12,8 +13,9 @@ const flightCheckPrice = require('./routes/flightCheckPrice');
 const flightCheckCountry = require('./routes/flightCheckCountry');
 const flightSeatMap = require('./routes/flightSeatMap');
 const payment = require('./routes/payment');
-const socketRoutes = require('./routes/socketRoutes'); // New: Import Socket.IO routes
+const socketRoutes = require('./routes/socketRoutes');
 const serviceAccount = require('./serviceAccountKey.json');
+
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),

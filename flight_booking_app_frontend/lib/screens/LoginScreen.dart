@@ -1,5 +1,6 @@
 import 'package:flight_booking_app_frontend/screens/HomeScreen.dart';
 import 'package:flight_booking_app_frontend/screens/PaymentScreen.dart';
+import 'package:flight_booking_app_frontend/utils/constants.dart';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -8,7 +9,7 @@ import 'SignUpScreen.dart';
 
 Future<void> login(String email, String password) async {
   print("Login Handled");
-  final url = 'http://192.168.232.90:3000/api/auth/login'; // Change to your backend URL
+  final url = '${Constants.baseUrl}/api/auth/login'; // Change to your backend URL
   final response = await http.post(
     Uri.parse(url),
     headers: {'Content-Type': 'application/json'},

@@ -21,7 +21,7 @@ router.post('/' , async (req,res) => {
               },
             }
         );
-        // console.log("Seat Map Response: ", JSON.stringify(response.data, null, 2));
+        console.log("Seat Map Response from post request came");
         return res.json(response.data);
             
     }catch (error) {

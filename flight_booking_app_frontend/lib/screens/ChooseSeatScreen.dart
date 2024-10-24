@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flight_booking_app_frontend/screens/SeatBookingSynchronize.dart';
 import 'package:flutter/material.dart';
 
+import '../utils/constants.dart';
 import 'PaymentScreen.dart';
 
 class ChooseSeatScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class _ChooseSeatScreenState extends State<ChooseSeatScreen> {
   Map<int, int> selectedSeatsPerPage = {}; // Map to track selected seats per page
   double totalAmount = 0.0;
   late int numberOfTravellers;
+  late SeatBookingSyncronize sync;
 
   @override
   void initState() {
@@ -37,9 +39,16 @@ class _ChooseSeatScreenState extends State<ChooseSeatScreen> {
     _fetchSeatMap();
   }
 
+  @override
+  void dispose() {
+    sync.disconnectFromRoom(); // Disconnect when the screen is disposed
+    sync.socket.dispose();
+    super.dispose();
+  }
+
   Future<void> _fetchSeatMap() async {
     Dio dio = Dio();
-    final url = 'http://192.168.232.90:3000/api/flights/flightSeatMap';
+    final url = '${Constants.baseUrl}/api/flights/flightSeatMap';
 
     var flightOffers = widget.combinedData['data']?['flightOffers'];
 
@@ -55,8 +64,9 @@ class _ChooseSeatScreenState extends State<ChooseSeatScreen> {
 
         if (response.statusCode == 200) {
           final seatMapData = response.data['data'];
-          SeatBookingSyncronize sync = SeatBookingSyncronize(seatMapData, context);
+          sync = SeatBookingSyncronize(seatMapData, context);
           await sync.synchronizeWithWebSocket();
+          await sync.joinRoom();
           _createSeatMapPages(seatMapData);
         } else {
           setState(() {
@@ -109,13 +119,32 @@ class _ChooseSeatScreenState extends State<ChooseSeatScreen> {
         totalAmount -= selectedSeats[seatNumber]['price'];
         selectedSeats.remove(seatNumber);
         selectedSeatsPerPage[pageIndex] = currentPageSelection - 1;
+
+        // Emit to unlock the seat on the server
+      sync.socket.emit('unlockSeat', {
+        'roomId': sync.roomIds[pageIndex], 
+        'seatNumber': seatNumber
+      });
       } else {
         // Select seat
         if (currentPageSelection < numberOfTravellers) {
-          selectedSeats[seatNumber] = {'price': seatPrice};
-          selectedSeatsPerPage[pageIndex] = currentPageSelection + 1;
-          totalAmount += seatPrice;
-          _showPricePopup(seatNumber, seatPrice);
+          // Emit the lock seat request to the server
+        sync.socket.emit('lockSeat', {
+          'roomId': sync.roomIds[pageIndex], 
+          'seatNumber': seatNumber
+        });
+
+        // Wait for the server response before locking the seat in the UI
+        sync.socket.on('seatLocked', (data) {
+          if (data['seatNumber'] == seatNumber) {
+            setState(() {
+              selectedSeats[seatNumber] = {'price': seatPrice};
+              selectedSeatsPerPage[pageIndex] = currentPageSelection + 1;
+              totalAmount += seatPrice;
+              _showPricePopup(seatNumber, seatPrice);
+            });
+          }
+        });
         } else {
           // Show a message if more seats are selected than allowed
           ScaffoldMessenger.of(context).showSnackBar(

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flight_booking_app_frontend/screens/ChooseSeatScreen.dart';
+import 'package:flight_booking_app_frontend/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -15,17 +16,19 @@ class SelectTravellersScreen extends StatefulWidget {
 }
 
 class _SelectTravellersScreenState extends State<SelectTravellersScreen> {
-  List<Traveller> travellers = [Traveller(
-    id: '1',
-    firstName: '',
-    lastName: '',
-    dateOfBirth: '',
-    gender: '',
-    emailAddress: '',
-    phoneCountryCode: '',
-    phoneNumber: '',
-    travellerType: 'ADULT',
-  )];
+  List<Traveller> travellers = [
+    Traveller(
+      id: '1',
+      firstName: '',
+      lastName: '',
+      dateOfBirth: '',
+      gender: '',
+      emailAddress: '',
+      phoneCountryCode: '',
+      phoneNumber: '',
+      travellerType: 'ADULT',
+    )
+  ];
   bool isDomestic = true;
   late int numberOfTravellers = 0;
 
@@ -72,7 +75,7 @@ class _SelectTravellersScreenState extends State<SelectTravellersScreen> {
 
   Future<String> _getCountryCode(String iataCode) async {
     final response = await http.get(
-      Uri.parse('http://192.168.232.90:3000/api/flights/checkCountry/$iataCode'),
+      Uri.parse('${Constants.baseUrl}/api/flights/checkCountry/$iataCode'),
     );
     print("Country Code response : ${response.body}");
     if (response.statusCode == 200) {
@@ -117,7 +120,9 @@ class _SelectTravellersScreenState extends State<SelectTravellersScreen> {
       return;
     }
 
-    final travellersJson = travellers.map((traveller) => traveller.toJson(isDomestic: isDomestic)).toList();
+    final travellersJson = travellers
+        .map((traveller) => traveller.toJson(isDomestic: isDomestic))
+        .toList();
 
     // Combine pricingData and traveller data
     final combinedData = {
@@ -163,7 +168,8 @@ class _SelectTravellersScreenState extends State<SelectTravellersScreen> {
                       child: Column(
                         children: [
                           TextField(
-                            decoration: InputDecoration(labelText: 'First Name'),
+                            decoration:
+                                InputDecoration(labelText: 'First Name'),
                             onChanged: (value) {
                               travellers[index].firstName = value;
                             },
@@ -175,7 +181,8 @@ class _SelectTravellersScreenState extends State<SelectTravellersScreen> {
                             },
                           ),
                           TextField(
-                            decoration: InputDecoration(labelText: 'Date of Birth'),
+                            decoration:
+                                InputDecoration(labelText: 'Date of Birth'),
                             onChanged: (value) {
                               travellers[index].dateOfBirth = value;
                             },
@@ -187,74 +194,86 @@ class _SelectTravellersScreenState extends State<SelectTravellersScreen> {
                             },
                           ),
                           TextField(
-                            decoration: InputDecoration(labelText: 'Email Address'),
+                            decoration:
+                                InputDecoration(labelText: 'Email Address'),
                             onChanged: (value) {
                               travellers[index].emailAddress = value;
                             },
                           ),
                           TextField(
-                            decoration: InputDecoration(labelText: 'Phone Country Code'),
+                            decoration: InputDecoration(
+                                labelText: 'Phone Country Code'),
                             onChanged: (value) {
                               travellers[index].phoneCountryCode = value;
                             },
                           ),
                           TextField(
-                            decoration: InputDecoration(labelText: 'Phone Number'),
+                            decoration:
+                                InputDecoration(labelText: 'Phone Number'),
                             onChanged: (value) {
                               travellers[index].phoneNumber = value;
                             },
                           ),
                           if (!isDomestic) ...[
                             TextField(
-                              decoration: InputDecoration(labelText: 'Document Type'),
+                              decoration:
+                                  InputDecoration(labelText: 'Document Type'),
                               onChanged: (value) {
                                 travellers[index].documentType = value;
                               },
                             ),
                             TextField(
-                              decoration: InputDecoration(labelText: 'Document Number'),
+                              decoration:
+                                  InputDecoration(labelText: 'Document Number'),
                               onChanged: (value) {
                                 travellers[index].documentNumber = value;
                               },
                             ),
                             TextField(
-                              decoration: InputDecoration(labelText: 'Document Expiry Date'),
+                              decoration: InputDecoration(
+                                  labelText: 'Document Expiry Date'),
                               onChanged: (value) {
                                 travellers[index].documentExpiry = value;
                               },
                             ),
                             TextField(
-                              decoration: InputDecoration(labelText: 'Birth Place'),
+                              decoration:
+                                  InputDecoration(labelText: 'Birth Place'),
                               onChanged: (value) {
                                 travellers[index].birthPlace = value;
                               },
                             ),
                             TextField(
-                              decoration: InputDecoration(labelText: 'Issuance Location'),
+                              decoration: InputDecoration(
+                                  labelText: 'Issuance Location'),
                               onChanged: (value) {
                                 travellers[index].issuanceLocation = value;
                               },
                             ),
                             TextField(
-                              decoration: InputDecoration(labelText: 'Issuance Date'),
+                              decoration:
+                                  InputDecoration(labelText: 'Issuance Date'),
                               onChanged: (value) {
                                 travellers[index].issuanceDate = value;
                               },
                             ),
                             TextField(
-                              decoration: InputDecoration(labelText: 'Issuance Country'),
+                              decoration: InputDecoration(
+                                  labelText: 'Issuance Country'),
                               onChanged: (value) {
                                 travellers[index].issuanceCountry = value;
                               },
                             ),
                             TextField(
-                              decoration: InputDecoration(labelText: 'Validity Country'),
+                              decoration: InputDecoration(
+                                  labelText: 'Validity Country'),
                               onChanged: (value) {
                                 travellers[index].validityCountry = value;
                               },
                             ),
                             TextField(
-                              decoration: InputDecoration(labelText: 'Nationality'),
+                              decoration:
+                                  InputDecoration(labelText: 'Nationality'),
                               onChanged: (value) {
                                 travellers[index].nationality = value;
                               },
@@ -262,7 +281,8 @@ class _SelectTravellersScreenState extends State<SelectTravellersScreen> {
                             TextField(
                               decoration: InputDecoration(labelText: 'Holder'),
                               onChanged: (value) {
-                                travellers[index].holder = value.toLowerCase() == 'true';
+                                travellers[index].holder =
+                                    value.toLowerCase() == 'true';
                               },
                             ),
                           ],

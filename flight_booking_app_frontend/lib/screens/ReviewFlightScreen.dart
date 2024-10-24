@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
+import '../utils/constants.dart';
 import 'SelectTravellersScreen.dart';
 
 class ReviewFlightScreen extends StatefulWidget {
@@ -22,7 +23,7 @@ class _ReviewFlightScreenState extends State<ReviewFlightScreen> {
   }
 
   Future<void> _fetchPricing() async {
-    final url = 'http://192.168.232.90:3000/api/flights/price';
+    final url = '${Constants.baseUrl}/api/flights/price';
 
     try {
       final response = await Dio().post(url, data: widget.flightData);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
 
+import '../utils/constants.dart';
 import 'ReviewFlightScreen.dart';
 
 class SearchFlightScreen extends StatefulWidget {
@@ -37,7 +38,7 @@ class _SearchFlightScreenState extends State<SearchFlightScreen> {
   }
 
   Future<void> _fetchFlights() async {
-    final url = 'http://192.168.232.90:3000/api/flights/searchAvailableFlights';
+    final url = '${Constants.baseUrl}/api/flights/searchAvailableFlights';
     final params = {
       'origin': widget.origin,
       'destination': widget.destination,

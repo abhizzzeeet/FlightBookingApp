@@ -1,4 +1,4 @@
-
+import 'package:flight_booking_app_frontend/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -6,9 +6,9 @@ import 'package:logger/logger.dart';
 
 final logger = Logger();
 
-
 Future<void> signUp(String email, String password) async {
-  final url = 'http://192.168.232.90:3000/api/auth/signup'; // Change to your backend URL
+  final url =
+      '${Constants.baseUrl}/api/auth/signup'; // Change to your backend URL
   final response = await http.post(
     Uri.parse(url),
     headers: {'Content-Type': 'application/json'},
@@ -31,7 +31,8 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   Future<void> _handleSignUp() async {
     final email = _emailController.text;
@@ -52,10 +53,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Sign up successful')),
       );
-
     } catch (e, stackTrace) {
       // Show error message
-      logger.e('Error : $e',error: e, stackTrace: stackTrace);
+      logger.e('Error : $e', error: e, stackTrace: stackTrace);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to sign up')),
       );
