@@ -1,5 +1,6 @@
 import 'dart:ffi';
 
+import 'package:flight_booking_app_frontend/screens/SeatBookingSynchronize.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:http/http.dart' as http;
@@ -15,14 +16,19 @@ void main() async {
 Future<void> _setup() async {
   WidgetsFlutterBinding.ensureInitialized();
   Stripe.publishableKey =
-  'pk_test_51PsKYGDfeL7GR0IaV7aOHhCIVCDHZU4i9fxSVb7zHAuzu4T2srHPxCniMTPqIIMmpkdPtRHCnqHV4HMD8pYMuiDP00EpJCGmSi';
+      'pk_test_51PsKYGDfeL7GR0IaV7aOHhCIVCDHZU4i9fxSVb7zHAuzu4T2srHPxCniMTPqIIMmpkdPtRHCnqHV4HMD8pYMuiDP00EpJCGmSi';
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: PaymentScreen(amount: 10000, combinedData: {}),
+      home: PaymentScreen(
+          amount: 10000,
+          combinedData: {},
+          selectedSeats: {},
+          selectedSeatsPerPage: {},
+          sync: null),
     );
   }
 }
@@ -30,16 +36,22 @@ class MyApp extends StatelessWidget {
 class PaymentScreen extends StatefulWidget {
   final double amount;
   final Map<String, Map<String, Object?>> combinedData;
-
-  PaymentScreen({required this.amount, required this.combinedData});
+  final Map<String, dynamic> selectedSeats;
+  final Map<int, int> selectedSeatsPerPage;
+  SeatBookingSyncronize? sync;
+  PaymentScreen(
+      {required this.amount,
+      required this.combinedData,
+      required this.selectedSeats,
+      required this.selectedSeatsPerPage,
+      required this.sync});
 
   @override
   _PaymentScreenState createState() => _PaymentScreenState();
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
-  bool isLoading = true;  // Show loading indicator initially
-
+  bool isLoading = true; // Show loading indicator initially
   @override
   void initState() {
     super.initState();
@@ -93,6 +105,20 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Future<void> _displayPaymentSheet(String clientSecret) async {
     try {
       await Stripe.instance.presentPaymentSheet();
+
+      // Loop through each page in selectedSeatsPerPage
+      widget.selectedSeatsPerPage.forEach((pageIndex, seatsCount) {
+        if (seatsCount > 0) {
+          // Reset lock timers for selected seats on the current page
+          widget.selectedSeats.keys.forEach((seatNumber) {
+            widget.sync!.socket.emit('unlockSeat', {
+              'roomId': widget.sync!.roomIds[pageIndex], // Use roomId for each page
+              'seatNumber': seatNumber,
+            });
+          });
+        }
+      });
+
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -117,7 +143,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator()) // Show loading indicator
-          : Center(child: Text('Processing Payment...')), // Show processing message
+          : Center(
+              child: Text('Processing Payment...')), // Show processing message
     );
   }
 }

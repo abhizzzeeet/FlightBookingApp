@@ -4,7 +4,7 @@ const admin = require('firebase-admin');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require("socket.io");
-
+const Redis = require('ioredis');
 
 const authRoutes = require('./routes/authRoutes');
 const flightSuggestion = require('./routes/flightSuggest');
@@ -29,6 +29,22 @@ const io = new Server(server, {
   },
 });
 
+// Initialize Redis
+const redis = new Redis({
+  host: '127.0.0.1', // Replace with your Redis host (Google Cloud Redis instance)
+  port: 6379, // Default Redis port
+});
+
+// Add connection and error event listeners
+redis.on('connect', () => {
+  console.log('Connected to local Redis');
+});
+
+redis.on('error', (err) => {
+  console.error('Redis connection error:', err);
+});
+
+
 // Middleware
 app.use(bodyParser.json());
 app.use(cors());
@@ -43,7 +59,7 @@ app.use('/api/flights/flightSeatMap', flightSeatMap);
 app.use('/api/payment', payment);
 
 // New: Socket.IO routes
-socketRoutes(io); // Pass `io` instance to the socket route
+socketRoutes(io,redis); // Pass `io` instance to the socket route
 
 // Start the server
 const PORT = process.env.PORT || 3000;

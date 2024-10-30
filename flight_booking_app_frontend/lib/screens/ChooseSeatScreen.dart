@@ -18,8 +18,10 @@ class ChooseSeatScreen extends StatefulWidget {
 class _ChooseSeatScreenState extends State<ChooseSeatScreen> {
   List<Map<String, dynamic>> seatMapPages = [];
   bool isLoading = true;
-  Map<String, dynamic> selectedSeats = {}; // Map to track selected seats and their prices
-  Map<int, int> selectedSeatsPerPage = {}; // Map to track selected seats per page
+  Map<String, dynamic> selectedSeats =
+      {}; // Map to track selected seats and their prices
+  Map<int, int> selectedSeatsPerPage =
+      {}; // Map to track selected seats per page
   double totalAmount = 0.0;
   late int numberOfTravellers;
   late SeatBookingSyncronize sync;
@@ -41,6 +43,17 @@ class _ChooseSeatScreenState extends State<ChooseSeatScreen> {
 
   @override
   void dispose() {
+    // Unlock all selected seats on each page
+    selectedSeatsPerPage.forEach((pageIndex, seatsCount) {
+      if (seatsCount > 0) {
+        selectedSeats.keys.forEach((seatNumber) {
+          sync.socket.emit('unlockSeat', {
+            'roomId': sync.roomIds[pageIndex],
+            'seatNumber': seatNumber,
+          });
+        });
+      }
+    });
     sync.disconnectFromRoom(); // Disconnect when the screen is disposed
     sync.socket.dispose();
     super.dispose();
@@ -116,39 +129,39 @@ class _ChooseSeatScreenState extends State<ChooseSeatScreen> {
 
       if (selectedSeats.containsKey(seatNumber)) {
         // Deselect seat if already selected
-        totalAmount -= selectedSeats[seatNumber]['price'];
         selectedSeats.remove(seatNumber);
-        selectedSeatsPerPage[pageIndex] = currentPageSelection - 1;
+        setState(() {
+          totalAmount -= selectedSeats[seatNumber]['price'];
+          selectedSeatsPerPage[pageIndex] = currentPageSelection - 1;
+        });
 
         // Emit to unlock the seat on the server
-      sync.socket.emit('unlockSeat', {
-        'roomId': sync.roomIds[pageIndex], 
-        'seatNumber': seatNumber
-      });
+        sync.socket.emit('unlockSeat',
+            {'roomId': sync.roomIds[pageIndex], 'seatNumber': seatNumber});
       } else {
         // Select seat
         if (currentPageSelection < numberOfTravellers) {
           // Emit the lock seat request to the server
-        sync.socket.emit('lockSeat', {
-          'roomId': sync.roomIds[pageIndex], 
-          'seatNumber': seatNumber
-        });
+          sync.socket.emit('lockSeat',
+              {'roomId': sync.roomIds[pageIndex], 'seatNumber': seatNumber});
 
-        // Wait for the server response before locking the seat in the UI
-        sync.socket.on('seatLocked', (data) {
-          if (data['seatNumber'] == seatNumber) {
-            setState(() {
-              selectedSeats[seatNumber] = {'price': seatPrice};
-              selectedSeatsPerPage[pageIndex] = currentPageSelection + 1;
-              totalAmount += seatPrice;
-              _showPricePopup(seatNumber, seatPrice);
-            });
-          }
-        });
+          // Wait for the server response before locking the seat in the UI
+          sync.socket.on('seatLocked', (data) {
+            if (data['seatNumber'] == seatNumber) {
+              setState(() {
+                selectedSeats[seatNumber] = {'price': seatPrice};
+                selectedSeatsPerPage[pageIndex] = currentPageSelection + 1;
+                totalAmount += seatPrice;
+                _showPricePopup(seatNumber, seatPrice);
+              });
+            }
+          });
         } else {
           // Show a message if more seats are selected than allowed
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Maximum number of seats selected on this page.')),
+            SnackBar(
+                content:
+                    Text('Maximum number of seats selected on this page.')),
           );
         }
       }
@@ -161,7 +174,8 @@ class _ChooseSeatScreenState extends State<ChooseSeatScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Seat Selected'),
-          content: Text('Seat $seatNumber selected. Price: \$${seatPrice.toStringAsFixed(2)}'),
+          content: Text(
+              'Seat $seatNumber selected. Price: \$${seatPrice.toStringAsFixed(2)}'),
           actions: <Widget>[
             TextButton(
               child: Text('OK'),
@@ -175,6 +189,35 @@ class _ChooseSeatScreenState extends State<ChooseSeatScreen> {
     );
   }
 
+  void navigateToPaymentScreen() {
+    // Loop through each page in selectedSeatsPerPage
+    selectedSeatsPerPage.forEach((pageIndex, seatsCount) {
+      if (seatsCount > 0) {
+        // Reset lock timers for selected seats on the current page
+        selectedSeats.keys.forEach((seatNumber) {
+          sync.socket.emit('resetLockTimer', {
+            'roomId': sync.roomIds[pageIndex], // Use roomId for each page
+            'seatNumber': seatNumber,
+          });
+        });
+      }
+    });
+
+    // Navigate to PaymentScreen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentScreen(
+          amount: totalAmount,
+          combinedData: widget.combinedData,
+          selectedSeats: selectedSeats,
+          selectedSeatsPerPage: selectedSeatsPerPage,
+          sync: sync
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -184,49 +227,43 @@ class _ChooseSeatScreenState extends State<ChooseSeatScreen> {
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : Column(
-        children: [
-          Expanded(
-            child: PageView.builder(
-              itemCount: seatMapPages.length,
-              itemBuilder: (context, index) {
-                final pageData = seatMapPages[index];
-                return SingleChildScrollView(
-                  padding: EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${pageData['departureCode']} to ${pageData['arrivalCode']}',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 16.0),
-                      _buildSeatMap(index, pageData['decks']),
-                    ],
+              children: [
+                Expanded(
+                  child: PageView.builder(
+                    itemCount: seatMapPages.length,
+                    itemBuilder: (context, index) {
+                      final pageData = seatMapPages[index];
+                      return SingleChildScrollView(
+                        padding: EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${pageData['departureCode']} to ${pageData['arrivalCode']}',
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(height: 16.0),
+                            _buildSeatMap(index, pageData['decks']),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: () {
-                // Navigate to PaymentScreen and pass totalAmount
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PaymentScreen(amount: totalAmount,combinedData: widget.combinedData),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: navigateToPaymentScreen,
+                    child: Text(
+                      'Pay: Rs${totalAmount.toStringAsFixed(2)}',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
                   ),
-                );
-              },
-              child: Text(
-                'Pay: Rs${totalAmount.toStringAsFixed(2)}',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -256,7 +293,7 @@ class _ChooseSeatScreenState extends State<ChooseSeatScreen> {
 
     List<List<Map<String, dynamic>>> seatMatrix = List.generate(
       length,
-          (index) => List.generate(width, (index) => {}),
+      (index) => List.generate(width, (index) => {}),
     );
 
     for (var seat in seats) {
@@ -273,20 +310,22 @@ class _ChooseSeatScreenState extends State<ChooseSeatScreen> {
     return Column(
       children: List.generate(
         length,
-            (rowIndex) => Row(
+        (rowIndex) => Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(
             width,
-                (colIndex) {
+            (colIndex) {
               final seat = seatMatrix[rowIndex][colIndex];
               if (seat.isEmpty) {
-                return SizedBox(width: 30, height: 30); // Reduced size for empty space
+                return SizedBox(
+                    width: 30, height: 30); // Reduced size for empty space
               }
               bool isSelected = selectedSeats.containsKey(seat['number']);
               return GestureDetector(
                 onTap: () {
                   print("Seat Clicked");
-                  double seatPrice = double.parse(seat['travelerPricing'][0]['price']['total'] ?? '0.0');
+                  double seatPrice = double.parse(
+                      seat['travelerPricing'][0]['price']['total'] ?? '0.0');
                   _onSeatSelected(pageIndex, seat['number'], seatPrice);
                 },
                 child: SeatWidget(
@@ -344,7 +383,10 @@ class SeatWidget extends StatelessWidget {
       child: Center(
         child: Text(
           seatNumber,
-          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold), // Adjust font size
+          style: TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.bold), // Adjust font size
         ),
       ),
     );

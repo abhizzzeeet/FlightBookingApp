@@ -1,0 +1,2 @@
+runtime: nodejs20 
+instance_class: F1  # Choose based on your resource needs
